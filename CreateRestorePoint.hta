@@ -1,0 +1,123 @@
+<html>
+<head>
+<meta charset="UTF-8 ">
+<title>创建系统还原点</title>
+<hta:application
+    applicationname="创建系统还原点"
+    border="thin"
+    borderstyle="normal"
+    caption="yes"
+    contextmenu="yes"
+    icon=""
+    maximizebutton="yes"
+    minimizebutton="yes"
+    showintaskbar="yes"
+    singleinstance="yes"
+    sysmenu="yes"
+    version="1.0"
+    windowstate="normal">
+<style>
+    body {
+        font-family: "Microsoft YaHei", sans-serif;
+        margin: 20px;
+        background-color: #f0f0f0;
+    }
+    .container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .status {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    .success {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+    .error {
+        background-color: #ffebee;
+        color: #c62828;
+    }
+    .progress {
+        display: none;
+        margin: 10px 0;
+    }
+</style>
+</head>
+<script language="JavaScript">
+function checkAdmin() {
+    try {
+        var shell = new ActiveXObject("Shell.Application");
+        var WScript = new ActiveXObject("WScript.Shell");
+        
+        // 尝试写入一个系统受保护的位置
+        var testCmd = 'cmd /c echo %TEMP% > "%SystemRoot%\\temp.txt" 2>&1';
+        var result = WScript.Run(testCmd, 0, true);
+        
+        // 清理测试文件
+        WScript.Run('cmd /c del "%SystemRoot%\\temp.txt" 2>nul', 0, true);
+        
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+// 添加一个补零的辅助函数
+function padZero(num) {
+    return num < 10 ? '0' + num : num;
+}
+
+function createRestorePoint() {
+    try {
+        document.getElementById('progress').style.display = 'block';
+        document.getElementById('status').innerHTML = "正在创建系统还原点...";
+        document.getElementById('status').className = "status";
+
+        // 创建 WScript.Shell 对象
+        var shell = new ActiveXObject("WScript.Shell");
+        
+        // 获取当前日期并格式化为 YYYY-MM-DD 格式
+        var today = new Date();
+        var date = today.getFullYear() + '-' + 
+                   padZero(today.getMonth() + 1) + '-' + 
+                   padZero(today.getDate());
+        
+        // 创建还原点描述
+        var description = date + " 创建系统还原点";
+        
+        // 直接尝试创建还原点
+        var cmd = 'wmic.exe /Namespace:\\\\root\\default Path SystemRestore Call CreateRestorePoint "' + 
+                  description + '", 100, 7';
+        
+        var result = shell.Run(cmd, 0, true);
+        
+        // 显示成功消息
+        document.getElementById('status').innerHTML = "系统还原点创建成功！<br>描述：" + description;
+        document.getElementById('status').className = "status success";
+        
+        // 3秒后关闭窗口
+        setTimeout(function() {
+            window.close();
+        }, 3000);
+    } catch (error) {
+        document.getElementById('status').innerHTML = "创建系统还原点失败：" + error.message;
+        document.getElementById('status').className = "status error";
+    } finally {
+        document.getElementById('progress').style.display = 'none';
+    }
+}
+</script>
+<body onload="createRestorePoint()">
+    <div class="container">
+        <h2>系统还原点创建工具</h2>
+        <div id="status" class="status">正在初始化...</div>
+        <div id="progress" class="progress">
+            <img src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==" alt="Loading..."/>
+        </div>
+    </div>
+</body>
+</html> 
